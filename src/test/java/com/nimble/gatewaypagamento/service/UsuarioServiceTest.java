@@ -1,7 +1,7 @@
 package com.nimble.gatewaypagamento.service;
 
-import com.nimble.gatewaypagamento.dto.CadastroUsuarioDTO;
-import com.nimble.gatewaypagamento.dto.UsuarioResponseDTO;
+import com.nimble.gatewaypagamento.dto.usuario.CadastroUsuarioDTO;
+import com.nimble.gatewaypagamento.dto.usuario.UsuarioResponseDTO;
 import com.nimble.gatewaypagamento.entity.Usuario;
 import com.nimble.gatewaypagamento.entity.enums.Funcao;
 import com.nimble.gatewaypagamento.exception.SenhaIncorretaException;
@@ -112,4 +112,25 @@ class UsuarioServiceTest {
 
         assertThrows(SenhaIncorretaException.class, () -> usuarioService.autenticar("123", "senha"));
     }
+
+    @Test
+    void deveBuscarUsuarioPorCpfComSucesso() {
+        Usuario usuario = Usuario.builder().cpf("123").nome("João").build();
+        when(usuarioRepository.findByCpf("123")).thenReturn(Optional.of(usuario));
+
+        Usuario result = usuarioService.buscarPorCpf("123");
+
+        assertEquals(usuario, result);
+        verify(usuarioRepository).findByCpf("123");
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoUsuarioNaoEncontradoPorCpf() {
+        when(usuarioRepository.findByCpf("999")).thenReturn(Optional.empty());
+
+        assertThrows(UsuarioNaoEncontradoException.class, () -> usuarioService.buscarPorCpf("999"));
+        verify(usuarioRepository).findByCpf("999");
+    }
+
+
 }

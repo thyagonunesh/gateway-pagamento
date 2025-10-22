@@ -1,6 +1,6 @@
 package com.nimble.gatewaypagamento.mapper;
 
-import com.nimble.gatewaypagamento.dto.UsuarioResponseDTO;
+import com.nimble.gatewaypagamento.dto.usuario.UsuarioResponseDTO;
 import com.nimble.gatewaypagamento.entity.Usuario;
 import org.mapstruct.Mapper;
 

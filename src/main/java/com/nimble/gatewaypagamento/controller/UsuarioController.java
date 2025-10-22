@@ -1,8 +1,8 @@
 package com.nimble.gatewaypagamento.controller;
 
-import com.nimble.gatewaypagamento.dto.CadastroUsuarioDTO;
-import com.nimble.gatewaypagamento.dto.LoginDTO;
-import com.nimble.gatewaypagamento.dto.UsuarioResponseDTO;
+import com.nimble.gatewaypagamento.dto.usuario.CadastroUsuarioDTO;
+import com.nimble.gatewaypagamento.dto.usuario.LoginDTO;
+import com.nimble.gatewaypagamento.dto.usuario.UsuarioResponseDTO;
 import com.nimble.gatewaypagamento.entity.Usuario;
 import com.nimble.gatewaypagamento.service.TokenService;
 import com.nimble.gatewaypagamento.service.UsuarioService;
@@ -31,7 +31,7 @@ public class UsuarioController {
 
     @PostMapping("/login")
     public ResponseEntity<?> autenticar(@RequestBody @Valid LoginDTO dto) {
-        Usuario usuario = usuarioService.autenticar(dto.cpfOuEmail(),  dto.senha());
+        Usuario usuario = usuarioService.autenticar(dto.cpfOuEmail(), dto.senha());
         String token = tokenService.gerarToken(usuario);
 
         return ResponseEntity.ok(token);

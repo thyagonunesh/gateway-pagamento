@@ -1,4 +1,4 @@
-package com.nimble.gatewaypagamento.dto;
+package com.nimble.gatewaypagamento.dto.usuario;
 
 import com.nimble.gatewaypagamento.entity.enums.Funcao;
 

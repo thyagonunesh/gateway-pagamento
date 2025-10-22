@@ -1,9 +1,9 @@
 package com.nimble.gatewaypagamento.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimble.gatewaypagamento.dto.CadastroUsuarioDTO;
-import com.nimble.gatewaypagamento.dto.LoginDTO;
-import com.nimble.gatewaypagamento.dto.UsuarioResponseDTO;
+import com.nimble.gatewaypagamento.dto.usuario.CadastroUsuarioDTO;
+import com.nimble.gatewaypagamento.dto.usuario.LoginDTO;
+import com.nimble.gatewaypagamento.dto.usuario.UsuarioResponseDTO;
 import com.nimble.gatewaypagamento.entity.Usuario;
 import com.nimble.gatewaypagamento.entity.enums.Funcao;
 import com.nimble.gatewaypagamento.service.TokenService;

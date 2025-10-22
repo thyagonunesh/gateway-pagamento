@@ -1,7 +1,7 @@
 package com.nimble.gatewaypagamento.service;
 
-import com.nimble.gatewaypagamento.dto.CadastroUsuarioDTO;
-import com.nimble.gatewaypagamento.dto.UsuarioResponseDTO;
+import com.nimble.gatewaypagamento.dto.usuario.CadastroUsuarioDTO;
+import com.nimble.gatewaypagamento.dto.usuario.UsuarioResponseDTO;
 import com.nimble.gatewaypagamento.entity.Usuario;
 import com.nimble.gatewaypagamento.entity.enums.Funcao;
 import com.nimble.gatewaypagamento.exception.SenhaIncorretaException;
@@ -52,4 +52,10 @@ public class UsuarioService {
 
         return usuario;
     }
+
+    public Usuario buscarPorCpf(String cpf) {
+        return usuarioRepository.findByCpf(cpf)
+                .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado"));
+    }
+
 }

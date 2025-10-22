@@ -1,7 +1,8 @@
 package com.nimble.gatewaypagamento.exception.handler;
 
-import com.nimble.gatewaypagamento.exception.UsuarioJaCadastradoException;
+import com.nimble.gatewaypagamento.exception.CpfOriginadorDestinatarioIguaisException;
 import com.nimble.gatewaypagamento.exception.SenhaIncorretaException;
+import com.nimble.gatewaypagamento.exception.UsuarioJaCadastradoException;
 import com.nimble.gatewaypagamento.exception.UsuarioNaoEncontradoException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             UsuarioNaoEncontradoException.class,
             SenhaIncorretaException.class,
-            UsuarioJaCadastradoException.class
+            UsuarioJaCadastradoException.class,
+            CpfOriginadorDestinatarioIguaisException.class
     })
     public ResponseEntity<Map<String, Object>> handleUsuarioException(RuntimeException ex) {
         Map<String, Object> body = new HashMap<>();
