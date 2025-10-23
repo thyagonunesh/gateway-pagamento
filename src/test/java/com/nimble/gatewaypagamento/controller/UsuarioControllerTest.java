@@ -3,7 +3,7 @@ package com.nimble.gatewaypagamento.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimble.gatewaypagamento.dto.usuario.CadastroUsuarioDTO;
 import com.nimble.gatewaypagamento.dto.usuario.LoginDTO;
-import com.nimble.gatewaypagamento.dto.usuario.UsuarioResponseDTO;
+import com.nimble.gatewaypagamento.dto.usuario.RespostaUsuarioDTO;
 import com.nimble.gatewaypagamento.entity.Usuario;
 import com.nimble.gatewaypagamento.entity.enums.Funcao;
 import com.nimble.gatewaypagamento.service.TokenService;
@@ -41,9 +41,9 @@ class UsuarioControllerTest {
     @Test
     void cadastrar_deveRetornar201() throws Exception {
         CadastroUsuarioDTO dto = new CadastroUsuarioDTO("Nome", "12345678909", "teste@teste.com", "senha123");
-        UsuarioResponseDTO responseDTO = new UsuarioResponseDTO(null, "Nome", "email@teste.com", "12345678900", Funcao.USUARIO);
+        RespostaUsuarioDTO responseDTO = new RespostaUsuarioDTO(null, "Nome", "email@teste.com", "12345678900", Funcao.USUARIO);
 
-        Mockito.when(usuarioService.cadastrar(any(CadastroUsuarioDTO.class))).thenReturn(responseDTO);
+        Mockito.when(usuarioService.salvar(any(CadastroUsuarioDTO.class))).thenReturn(responseDTO);
 
         mockMvc.perform(post("/usuarios")
                         .contentType(MediaType.APPLICATION_JSON)

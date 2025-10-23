@@ -4,6 +4,8 @@ import com.nimble.gatewaypagamento.entity.enums.Funcao;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "usuarios")
 @Getter
@@ -31,5 +33,8 @@ public class Usuario {
 
     @Enumerated(EnumType.STRING)
     private Funcao funcao;
+
+    @Column(precision = 14, scale = 2)
+    private BigDecimal saldo;
 
 }

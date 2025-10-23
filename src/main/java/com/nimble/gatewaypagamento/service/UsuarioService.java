@@ -1,12 +1,12 @@
 package com.nimble.gatewaypagamento.service;
 
 import com.nimble.gatewaypagamento.dto.usuario.CadastroUsuarioDTO;
-import com.nimble.gatewaypagamento.dto.usuario.UsuarioResponseDTO;
+import com.nimble.gatewaypagamento.dto.usuario.RespostaUsuarioDTO;
 import com.nimble.gatewaypagamento.entity.Usuario;
 import com.nimble.gatewaypagamento.entity.enums.Funcao;
-import com.nimble.gatewaypagamento.exception.SenhaIncorretaException;
-import com.nimble.gatewaypagamento.exception.UsuarioJaCadastradoException;
-import com.nimble.gatewaypagamento.exception.UsuarioNaoEncontradoException;
+import com.nimble.gatewaypagamento.exception.usuario.SenhaIncorretaException;
+import com.nimble.gatewaypagamento.exception.usuario.UsuarioJaCadastradoException;
+import com.nimble.gatewaypagamento.exception.usuario.UsuarioNaoEncontradoException;
 import com.nimble.gatewaypagamento.mapper.UsuarioMapper;
 import com.nimble.gatewaypagamento.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ public class UsuarioService {
     private final PasswordEncoder passwordEncoder;
     private final UsuarioMapper usuarioMapper;
 
-    public UsuarioResponseDTO cadastrar(CadastroUsuarioDTO dto) {
+    public RespostaUsuarioDTO salvar(CadastroUsuarioDTO dto) {
         usuarioRepository.findByCpf(dto.cpf())
                 .ifPresent(u -> { throw new UsuarioJaCadastradoException("CPF já cadastrado"); });
 
@@ -39,6 +39,10 @@ public class UsuarioService {
         Usuario salvo = usuarioRepository.save(usuario);
 
         return usuarioMapper.toDTO(salvo);
+    }
+
+    public void salvar(Usuario usuario) {
+        usuarioRepository.save(usuario);
     }
 
     public Usuario autenticar(String cpfOuEmail, String senha) {

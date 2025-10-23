@@ -1,7 +1,7 @@
 package com.nimble.gatewaypagamento.controller;
 
 import com.nimble.gatewaypagamento.dto.cobranca.CadastroCobrancaDTO;
-import com.nimble.gatewaypagamento.dto.cobranca.CobrancaResponseDTO;
+import com.nimble.gatewaypagamento.dto.cobranca.RespostaCobrancaDTO;
 import com.nimble.gatewaypagamento.entity.enums.StatusCobranca;
 import com.nimble.gatewaypagamento.service.CobrancaService;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,25 +42,25 @@ class CobrancaControllerTest {
     @Test
     void deveCriarCobrancaComSucesso() {
         CadastroCobrancaDTO dto = criarCadastroCobrancaDTO();
-        CobrancaResponseDTO response = criarCobrancaResponseDTO();
+        RespostaCobrancaDTO response = criarCobrancaResponseDTO();
 
-        when(cobrancaService.criarCobranca(anyString(), any(CadastroCobrancaDTO.class)))
+        when(cobrancaService.cadastrar(anyString(), any(CadastroCobrancaDTO.class)))
                 .thenReturn(response);
 
-        ResponseEntity<CobrancaResponseDTO> result = cobrancaController.criarCobranca(dto);
+        ResponseEntity<RespostaCobrancaDTO> result = cobrancaController.criarCobranca(dto, "12345678900");
 
         assertEquals(HttpStatus.CREATED, result.getStatusCode());
         assertEquals(response, result.getBody());
-        verify(cobrancaService).criarCobranca(eq("12345678900"), eq(dto));
+        verify(cobrancaService).cadastrar(eq("12345678900"), eq(dto));
     }
 
     @Test
     void deveListarEnviadasComSucesso() {
-        List<CobrancaResponseDTO> lista = List.of(criarCobrancaResponseDTO());
+        List<RespostaCobrancaDTO> lista = List.of(criarCobrancaResponseDTO());
         when(cobrancaService.listarEnviadas(anyString(), any())).thenReturn(lista);
 
-        ResponseEntity<List<CobrancaResponseDTO>> result =
-                cobrancaController.listarEnviadas(StatusCobranca.PENDENTE);
+        ResponseEntity<List<RespostaCobrancaDTO>> result =
+                cobrancaController.listarEnviadas(StatusCobranca.PENDENTE, "12345678900");
 
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertEquals(lista, result.getBody());
@@ -69,10 +69,10 @@ class CobrancaControllerTest {
 
     @Test
     void deveListarRecebidasComSucesso() {
-        List<CobrancaResponseDTO> lista = List.of(criarCobrancaResponseDTO());
+        List<RespostaCobrancaDTO> lista = List.of(criarCobrancaResponseDTO());
         when(cobrancaService.listarRecebidas(anyString(), any())).thenReturn(lista);
 
-        ResponseEntity<List<CobrancaResponseDTO>> result =
+        ResponseEntity<List<RespostaCobrancaDTO>> result =
                 cobrancaController.listarRecebidas("98765432100", StatusCobranca.PAGA);
 
         assertEquals(HttpStatus.OK, result.getStatusCode());

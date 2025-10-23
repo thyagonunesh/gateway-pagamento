@@ -2,7 +2,7 @@ package com.nimble.gatewaypagamento.controller;
 
 import com.nimble.gatewaypagamento.dto.usuario.CadastroUsuarioDTO;
 import com.nimble.gatewaypagamento.dto.usuario.LoginDTO;
-import com.nimble.gatewaypagamento.dto.usuario.UsuarioResponseDTO;
+import com.nimble.gatewaypagamento.dto.usuario.RespostaUsuarioDTO;
 import com.nimble.gatewaypagamento.entity.Usuario;
 import com.nimble.gatewaypagamento.service.TokenService;
 import com.nimble.gatewaypagamento.service.UsuarioService;
@@ -25,7 +25,7 @@ public class UsuarioController {
 
     @PostMapping
     public ResponseEntity<?> cadastrar(@RequestBody @Valid CadastroUsuarioDTO dto) {
-        UsuarioResponseDTO usuarioDTO = usuarioService.cadastrar(dto);
+        RespostaUsuarioDTO usuarioDTO = usuarioService.salvar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioDTO);
     }
 

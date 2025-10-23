@@ -1,4 +1,4 @@
-package com.nimble.gatewaypagamento.exception;
+package com.nimble.gatewaypagamento.exception.usuario;
 
 public class SenhaIncorretaException extends RuntimeException {
     public SenhaIncorretaException(String mensagem) {

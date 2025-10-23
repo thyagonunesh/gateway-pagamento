@@ -5,7 +5,7 @@ import com.nimble.gatewaypagamento.entity.enums.StatusCobranca;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public record CobrancaResponseDTO(
+public record RespostaCobrancaDTO(
 
         Long id,
         String cpfOriginador,

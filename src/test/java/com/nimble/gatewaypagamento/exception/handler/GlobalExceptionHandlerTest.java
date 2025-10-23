@@ -1,6 +1,6 @@
 package com.nimble.gatewaypagamento.exception.handler;
 
-import com.nimble.gatewaypagamento.exception.UsuarioNaoEncontradoException;
+import com.nimble.gatewaypagamento.exception.usuario.UsuarioNaoEncontradoException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

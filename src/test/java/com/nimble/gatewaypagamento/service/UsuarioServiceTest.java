@@ -1,12 +1,12 @@
 package com.nimble.gatewaypagamento.service;
 
 import com.nimble.gatewaypagamento.dto.usuario.CadastroUsuarioDTO;
-import com.nimble.gatewaypagamento.dto.usuario.UsuarioResponseDTO;
+import com.nimble.gatewaypagamento.dto.usuario.RespostaUsuarioDTO;
 import com.nimble.gatewaypagamento.entity.Usuario;
 import com.nimble.gatewaypagamento.entity.enums.Funcao;
-import com.nimble.gatewaypagamento.exception.SenhaIncorretaException;
-import com.nimble.gatewaypagamento.exception.UsuarioJaCadastradoException;
-import com.nimble.gatewaypagamento.exception.UsuarioNaoEncontradoException;
+import com.nimble.gatewaypagamento.exception.usuario.SenhaIncorretaException;
+import com.nimble.gatewaypagamento.exception.usuario.UsuarioJaCadastradoException;
+import com.nimble.gatewaypagamento.exception.usuario.UsuarioNaoEncontradoException;
 import com.nimble.gatewaypagamento.mapper.UsuarioMapper;
 import com.nimble.gatewaypagamento.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +45,7 @@ class UsuarioServiceTest {
     }
 
     @Test
-    void deveCadastrarUsuarioComSucesso() {
+    void deveSalvarUsuarioComSucesso() {
         CadastroUsuarioDTO dto = new CadastroUsuarioDTO("Jo?o", "12345678900", "joao@email.com", "senha123");
         Usuario usuario = Usuario.builder()
                 .nome("Jo?o")
@@ -59,9 +59,9 @@ class UsuarioServiceTest {
         when(usuarioRepository.findByEmail(anyString())).thenReturn(Optional.empty());
         when(passwordEncoder.encode(anyString())).thenReturn("encodedSenha");
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuario);
-        when(usuarioMapper.toDTO(any(Usuario.class))).thenReturn(new UsuarioResponseDTO(null, "Jo?o", "12345678900", "joao@email.com", Funcao.USUARIO));
+        when(usuarioMapper.toDTO(any(Usuario.class))).thenReturn(new RespostaUsuarioDTO(null, "Jo?o", "12345678900", "joao@email.com", Funcao.USUARIO));
 
-        UsuarioResponseDTO response = usuarioService.cadastrar(dto);
+        RespostaUsuarioDTO response = usuarioService.salvar(dto);
 
         assertEquals("Jo?o", response.nome());
         verify(usuarioRepository).save(any(Usuario.class));
@@ -72,7 +72,7 @@ class UsuarioServiceTest {
         CadastroUsuarioDTO dto = new CadastroUsuarioDTO("Jo?o", "123", "email@test.com", "senha");
         when(usuarioRepository.findByCpf("123")).thenReturn(Optional.of(new Usuario()));
 
-        assertThrows(UsuarioJaCadastradoException.class, () -> usuarioService.cadastrar(dto));
+        assertThrows(UsuarioJaCadastradoException.class, () -> usuarioService.salvar(dto));
     }
 
     @Test
@@ -81,7 +81,7 @@ class UsuarioServiceTest {
         when(usuarioRepository.findByCpf("123")).thenReturn(Optional.empty());
         when(usuarioRepository.findByEmail("email@test.com")).thenReturn(Optional.of(new Usuario()));
 
-        assertThrows(UsuarioJaCadastradoException.class, () -> usuarioService.cadastrar(dto));
+        assertThrows(UsuarioJaCadastradoException.class, () -> usuarioService.salvar(dto));
     }
 
     @Test
@@ -132,5 +132,19 @@ class UsuarioServiceTest {
         verify(usuarioRepository).findByCpf("999");
     }
 
+    @Test
+    void deveSalvarUsuarioDiretamente() {
+        Usuario usuario = Usuario.builder()
+                .nome("João")
+                .cpf("12345678900")
+                .email("joao@email.com")
+                .senhaHash("senha")
+                .funcao(Funcao.USUARIO)
+                .build();
+
+        usuarioService.salvar(usuario);
+
+        verify(usuarioRepository).save(usuario);
+    }
 
 }

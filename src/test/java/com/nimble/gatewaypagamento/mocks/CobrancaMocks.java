@@ -1,7 +1,7 @@
 package com.nimble.gatewaypagamento.mocks;
 
 import com.nimble.gatewaypagamento.dto.cobranca.CadastroCobrancaDTO;
-import com.nimble.gatewaypagamento.dto.cobranca.CobrancaResponseDTO;
+import com.nimble.gatewaypagamento.dto.cobranca.RespostaCobrancaDTO;
 import com.nimble.gatewaypagamento.entity.enums.StatusCobranca;
 
 import java.math.BigDecimal;
@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 
 public class CobrancaMocks {
 
-    public static CobrancaResponseDTO criarCobrancaResponseDTO() {
-        return new CobrancaResponseDTO(
+    public static RespostaCobrancaDTO criarCobrancaResponseDTO() {
+        return new RespostaCobrancaDTO(
                 1L,
                 "11111111111",
                 "22222222222",

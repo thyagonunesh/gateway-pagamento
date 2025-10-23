@@ -2,20 +2,19 @@ package com.nimble.gatewaypagamento.entity.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-public enum StatusCobranca {
-    PENDENTE,
-    PAGA,
-    CANCELADA;
+public enum TipoPagamento {
+    SALDO,
+    CARTAO;
 
     @JsonCreator
-    public static StatusCobranca from(String value) {
+    public static TipoPagamento from(String value) {
         if (value == null) {
             throw new IllegalArgumentException("Valor não pode ser nulo");
         }
         try {
-            return StatusCobranca.valueOf(value.toUpperCase());
+            return TipoPagamento.valueOf(value.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Valor inválido para StatusCobranca: " + value, e);
+            throw new IllegalArgumentException("Valor inválido para TipoPagamento: " + value, e);
         }
     }
 }
