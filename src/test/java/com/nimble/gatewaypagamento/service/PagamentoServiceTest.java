@@ -9,6 +9,7 @@ import com.nimble.gatewaypagamento.entity.enums.StatusCobranca;
 import com.nimble.gatewaypagamento.entity.enums.StatusPagamento;
 import com.nimble.gatewaypagamento.entity.enums.TipoPagamento;
 import com.nimble.gatewaypagamento.exception.pagamento.PagamentoDeCobrancaNaoAutorizadaException;
+import com.nimble.gatewaypagamento.exception.pagamento.PagamentoNaoEncontradoException;
 import com.nimble.gatewaypagamento.exception.pagamento.SaldoInsuficienteException;
 import com.nimble.gatewaypagamento.repository.PagamentoRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -40,7 +42,8 @@ class PagamentoServiceTest {
         pagamentoRepository = mock(PagamentoRepository.class);
         autorizacaoService = mock(AutorizacaoService.class);
 
-        pagamentoService = new PagamentoService(cobrancaService, usuarioService, pagamentoRepository, autorizacaoService);
+        pagamentoService = new PagamentoService(usuarioService, pagamentoRepository, autorizacaoService);
+        pagamentoService.setCobrancaService(cobrancaService);
 
         originador = new Usuario();
         originador.setCpf("11111111111");
@@ -77,7 +80,7 @@ class PagamentoServiceTest {
         assertEquals(BigDecimal.valueOf(250), originador.getSaldo());
 
         verify(pagamentoRepository).save(any(Pagamento.class));
-        verify(cobrancaService).cadastrar(cobranca);
+        verify(cobrancaService).salvar(cobranca);
     }
 
     @Test
@@ -104,7 +107,7 @@ class PagamentoServiceTest {
 
         assertEquals(StatusPagamento.CONCLUIDO.name(), resposta.status());
         verify(pagamentoRepository).save(any(Pagamento.class));
-        verify(cobrancaService).cadastrar(cobranca);
+        verify(cobrancaService).salvar(cobranca);
     }
 
     // ---------------- Validações do cartão (branches do OR) ----------------
@@ -223,4 +226,34 @@ class PagamentoServiceTest {
         assertThrows(PagamentoDeCobrancaNaoAutorizadaException.class,
                 () -> pagamentoService.depositarSaldo(valor, destinatario.getCpf()));
     }
+
+    // ---------------- findByCobranca ----------------
+    @Test
+    void deveRetornarPagamentoQuandoExistir() {
+        Pagamento pagamento = new Pagamento();
+        pagamento.setValor(BigDecimal.valueOf(100));
+        when(pagamentoRepository.findByCobranca(cobranca)).thenReturn(Optional.of(pagamento));
+
+        Pagamento resultado = pagamentoService.findByCobranca(cobranca);
+
+        assertEquals(pagamento, resultado);
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoPagamentoNaoExistir() {
+        when(pagamentoRepository.findByCobranca(cobranca)).thenReturn(Optional.empty());
+
+        assertThrows(PagamentoNaoEncontradoException.class,
+                () -> pagamentoService.findByCobranca(cobranca));
+    }
+
+    // ---------------- salvar ----------------
+    @Test
+    void deveSalvarPagamentoComSucesso() {
+        Pagamento pagamento = new Pagamento();
+        pagamentoService.salvar(pagamento);
+
+        verify(pagamentoRepository).save(pagamento);
+    }
+
 }

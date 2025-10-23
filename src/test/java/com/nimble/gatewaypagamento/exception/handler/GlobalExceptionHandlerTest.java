@@ -21,19 +21,19 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void deveRetornarBadRequestParaUsuarioExceptions() {
-        UsuarioNaoEncontradoException ex = new UsuarioNaoEncontradoException("Usu?rio n?o encontrado");
+        UsuarioNaoEncontradoException ex = new UsuarioNaoEncontradoException("Usuário não encontrado");
 
-        ResponseEntity<Map<String, Object>> response = handler.handleUsuarioException(ex);
+        ResponseEntity<Map<String, Object>> response = handler.handleGatewayException(ex);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Usu?rio n?o encontrado", response.getBody().get("erro"));
+        assertEquals("Usuário não encontrado", response.getBody().get("erro"));
     }
 
     @Test
     void deveTratarErrosDeValidacao() {
         BindingResult bindingResult = mock(BindingResult.class);
-        FieldError error1 = new FieldError("obj", "cpf", "CPF inv?lido");
-        FieldError error2 = new FieldError("obj", "email", "E-mail inv?lido");
+        FieldError error1 = new FieldError("obj", "cpf", "CPF inválido");
+        FieldError error2 = new FieldError("obj", "email", "E-mail inválido");
 
         when(bindingResult.getFieldErrors()).thenReturn(List.of(error1, error2));
 
@@ -42,7 +42,7 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<Map<String, String>> response = handler.handleValidationExceptions(ex);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("CPF inv?lido", response.getBody().get("cpf"));
-        assertEquals("E-mail inv?lido", response.getBody().get("email"));
+        assertEquals("CPF inválido", response.getBody().get("cpf"));
+        assertEquals("E-mail inválido", response.getBody().get("email"));
     }
 }

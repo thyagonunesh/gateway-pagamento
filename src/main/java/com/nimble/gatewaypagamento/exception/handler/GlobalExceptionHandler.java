@@ -1,34 +1,20 @@
 package com.nimble.gatewaypagamento.exception.handler;
 
-import com.nimble.gatewaypagamento.exception.cobranca.CobrancaNaoEncontradaException;
-import com.nimble.gatewaypagamento.exception.cobranca.CpfOriginadorDestinatarioIguaisException;
-import com.nimble.gatewaypagamento.exception.pagamento.PagamentoDeCobrancaNaoAutorizadaException;
-import com.nimble.gatewaypagamento.exception.pagamento.SaldoInsuficienteException;
-import com.nimble.gatewaypagamento.exception.usuario.SenhaIncorretaException;
-import com.nimble.gatewaypagamento.exception.usuario.UsuarioJaCadastradoException;
-import com.nimble.gatewaypagamento.exception.usuario.UsuarioNaoEncontradoException;
+import com.nimble.gatewaypagamento.exception.GatewayPagamentoException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({
-            UsuarioNaoEncontradoException.class,
-            SenhaIncorretaException.class,
-            UsuarioJaCadastradoException.class,
-            CpfOriginadorDestinatarioIguaisException.class,
-            CobrancaNaoEncontradaException.class,
-            PagamentoDeCobrancaNaoAutorizadaException.class,
-            SaldoInsuficienteException.class
-    })
-    public ResponseEntity<Map<String, Object>> handleUsuarioException(RuntimeException ex) {
+    @ExceptionHandler(GatewayPagamentoException.class)
+    public ResponseEntity<Map<String, Object>> handleGatewayException(GatewayPagamentoException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("erro", ex.getMessage());
         return ResponseEntity.badRequest().body(body);

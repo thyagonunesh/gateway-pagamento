@@ -9,23 +9,33 @@ import com.nimble.gatewaypagamento.entity.enums.StatusCobranca;
 import com.nimble.gatewaypagamento.entity.enums.StatusPagamento;
 import com.nimble.gatewaypagamento.entity.enums.TipoPagamento;
 import com.nimble.gatewaypagamento.exception.pagamento.PagamentoDeCobrancaNaoAutorizadaException;
+import com.nimble.gatewaypagamento.exception.pagamento.PagamentoNaoEncontradoException;
 import com.nimble.gatewaypagamento.exception.pagamento.SaldoInsuficienteException;
 import com.nimble.gatewaypagamento.repository.PagamentoRepository;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Service
-@RequiredArgsConstructor
 public class PagamentoService {
 
-    private final CobrancaService cobrancaService;
     private final UsuarioService usuarioService;
     private final PagamentoRepository pagamentoRepository;
     private final AutorizacaoService autorizacaoService;
+
+    private CobrancaService cobrancaService;
+
+    public PagamentoService(UsuarioService usuarioService,
+                            PagamentoRepository pagamentoRepository,
+                            AutorizacaoService autorizacaoService) {
+        this.usuarioService = usuarioService;
+        this.pagamentoRepository = pagamentoRepository;
+        this.autorizacaoService = autorizacaoService;
+    }
 
     @Transactional
     public RespostaPagamentoDTO pagarCobranca(CadastroPagamentoDTO dto, String cpfPagador) {
@@ -51,7 +61,7 @@ public class PagamentoService {
         }
 
         cobranca.setStatus(StatusCobranca.PAGA);
-        cobrancaService.cadastrar(cobranca);
+        cobrancaService.salvar(cobranca);
 
         Pagamento pagamento = Pagamento.builder()
                 .cobranca(cobranca)
@@ -125,4 +135,18 @@ public class PagamentoService {
         recebedor.setSaldo(recebedor.getSaldo().add(cobranca.getValor()));
     }
 
+    public Pagamento findByCobranca(Cobranca cobranca) {
+        return pagamentoRepository
+                .findByCobranca(cobranca)
+                .orElseThrow(() -> new PagamentoNaoEncontradoException("Pagamento não encontrado para esta cobrança"));
+    }
+
+    public void salvar(Pagamento pagamento) {
+        pagamentoRepository.save(pagamento);
+    }
+
+    @Autowired
+    public void setCobrancaService(@Lazy CobrancaService cobrancaService) {
+        this.cobrancaService = cobrancaService;
+    }
 }

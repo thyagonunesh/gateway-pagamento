@@ -44,14 +44,14 @@ class CobrancaControllerTest {
         CadastroCobrancaDTO dto = criarCadastroCobrancaDTO();
         RespostaCobrancaDTO response = criarCobrancaResponseDTO();
 
-        when(cobrancaService.cadastrar(anyString(), any(CadastroCobrancaDTO.class)))
+        when(cobrancaService.salvar(anyString(), any(CadastroCobrancaDTO.class)))
                 .thenReturn(response);
 
         ResponseEntity<RespostaCobrancaDTO> result = cobrancaController.criarCobranca(dto, "12345678900");
 
         assertEquals(HttpStatus.CREATED, result.getStatusCode());
         assertEquals(response, result.getBody());
-        verify(cobrancaService).cadastrar(eq("12345678900"), eq(dto));
+        verify(cobrancaService).salvar(eq("12345678900"), eq(dto));
     }
 
     @Test
@@ -78,6 +78,24 @@ class CobrancaControllerTest {
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertEquals(lista, result.getBody());
         verify(cobrancaService).listarRecebidas(eq("98765432100"), eq(StatusCobranca.PAGA));
+    }
+
+    @Test
+    void deveCancelarCobrancaComSucesso() {
+        Long idCobranca = 1L;
+        String cpfCancelador = "12345678900";
+        RespostaCobrancaDTO resposta = criarCobrancaResponseDTO();
+
+        // Mock do serviço
+        when(cobrancaService.cancelarCobranca(idCobranca, cpfCancelador)).thenReturn(resposta);
+
+        // Chamada do controller
+        ResponseEntity<RespostaCobrancaDTO> result = cobrancaController.cancelar(idCobranca, cpfCancelador);
+
+        // Verificações
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(resposta, result.getBody());
+        verify(cobrancaService).cancelarCobranca(eq(idCobranca), eq(cpfCancelador));
     }
 
 }

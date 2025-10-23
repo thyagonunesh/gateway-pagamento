@@ -1,7 +1,10 @@
 package com.nimble.gatewaypagamento.exception.usuario;
 
-public class UsuarioJaCadastradoException extends RuntimeException {
+import com.nimble.gatewaypagamento.exception.GatewayPagamentoException;
+import org.springframework.http.HttpStatus;
+
+public class UsuarioJaCadastradoException extends GatewayPagamentoException {
     public UsuarioJaCadastradoException(String mensagem) {
-        super(mensagem);
+        super(mensagem, HttpStatus.BAD_REQUEST);
     }
 }

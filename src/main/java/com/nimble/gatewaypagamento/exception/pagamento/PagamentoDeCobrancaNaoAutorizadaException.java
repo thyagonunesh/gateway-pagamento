@@ -1,7 +1,10 @@
 package com.nimble.gatewaypagamento.exception.pagamento;
 
-public class PagamentoDeCobrancaNaoAutorizadaException extends RuntimeException {
+import com.nimble.gatewaypagamento.exception.GatewayPagamentoException;
+import org.springframework.http.HttpStatus;
+
+public class PagamentoDeCobrancaNaoAutorizadaException extends GatewayPagamentoException {
     public PagamentoDeCobrancaNaoAutorizadaException(String mensagem) {
-        super(mensagem);
+        super(mensagem, HttpStatus.BAD_REQUEST);
     }
 }

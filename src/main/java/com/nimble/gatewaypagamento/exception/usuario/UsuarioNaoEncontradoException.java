@@ -1,7 +1,10 @@
 package com.nimble.gatewaypagamento.exception.usuario;
 
-public class UsuarioNaoEncontradoException extends RuntimeException {
+import com.nimble.gatewaypagamento.exception.GatewayPagamentoException;
+import org.springframework.http.HttpStatus;
+
+public class UsuarioNaoEncontradoException extends GatewayPagamentoException {
     public UsuarioNaoEncontradoException(String mensagem) {
-        super(mensagem);
+        super(mensagem, HttpStatus.NOT_FOUND);
     }
 }

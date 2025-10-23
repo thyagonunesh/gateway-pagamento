@@ -1,7 +1,10 @@
 package com.nimble.gatewaypagamento.exception.usuario;
 
-public class SenhaIncorretaException extends RuntimeException {
+import com.nimble.gatewaypagamento.exception.GatewayPagamentoException;
+import org.springframework.http.HttpStatus;
+
+public class SenhaIncorretaException extends GatewayPagamentoException {
     public SenhaIncorretaException(String mensagem) {
-        super(mensagem);
+        super(mensagem, HttpStatus.BAD_REQUEST);
     }
 }

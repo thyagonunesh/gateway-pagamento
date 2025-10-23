@@ -3,10 +3,16 @@ package com.nimble.gatewaypagamento.service;
 import com.nimble.gatewaypagamento.dto.cobranca.CadastroCobrancaDTO;
 import com.nimble.gatewaypagamento.dto.cobranca.RespostaCobrancaDTO;
 import com.nimble.gatewaypagamento.entity.Cobranca;
+import com.nimble.gatewaypagamento.entity.Pagamento;
 import com.nimble.gatewaypagamento.entity.Usuario;
 import com.nimble.gatewaypagamento.entity.enums.StatusCobranca;
+import com.nimble.gatewaypagamento.entity.enums.StatusPagamento;
+import com.nimble.gatewaypagamento.entity.enums.TipoPagamento;
+import com.nimble.gatewaypagamento.exception.cobranca.CobrancaJaPagaException;
 import com.nimble.gatewaypagamento.exception.cobranca.CobrancaNaoEncontradaException;
 import com.nimble.gatewaypagamento.exception.cobranca.CpfOriginadorDestinatarioIguaisException;
+import com.nimble.gatewaypagamento.exception.cobranca.OriginadorInvalidoException;
+import com.nimble.gatewaypagamento.exception.pagamento.PagamentoDeCobrancaNaoAutorizadaException;
 import com.nimble.gatewaypagamento.mapper.CobrancaMapper;
 import com.nimble.gatewaypagamento.repository.CobrancaRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +45,12 @@ class CobrancaServiceTest {
     @Mock
     private CobrancaMapper cobrancaMapper;
 
+    @Mock
+    private PagamentoService pagamentoService;
+
+    @Mock
+    private AutorizacaoService autorizacaoService;
+
     @InjectMocks
     private CobrancaService cobrancaService;
 
@@ -47,6 +59,7 @@ class CobrancaServiceTest {
     private RespostaCobrancaDTO response;
     private Usuario originador;
     private Usuario destinatario;
+    private Pagamento pagamento;
 
     @BeforeEach
     void setUp() {
@@ -57,10 +70,12 @@ class CobrancaServiceTest {
         originador = new Usuario();
         originador.setCpf("11111111111");
         originador.setNome("Originador");
+        originador.setSaldo(new BigDecimal("200"));
 
         destinatario = new Usuario();
         destinatario.setCpf("12345678900");
         destinatario.setNome("Destinatario");
+        destinatario.setSaldo(new BigDecimal("50"));
 
         // Entidade Cobranca
         cobranca = Cobranca.builder()
@@ -83,6 +98,14 @@ class CobrancaServiceTest {
                 cobranca.getStatus(),
                 cobranca.getDataCriacao()
         );
+
+        pagamento = Pagamento.builder()
+                .id(1L)
+                .cobranca(cobranca)
+                .valor(new BigDecimal("100.00"))
+                .status(StatusPagamento.CONCLUIDO)
+                .tipoPagamento(TipoPagamento.SALDO) // inicialização default
+                .build();
     }
 
     @Test
@@ -93,7 +116,7 @@ class CobrancaServiceTest {
         when(cobrancaRepository.save(any(Cobranca.class))).thenReturn(cobranca);
         when(cobrancaMapper.toDTO(any(Cobranca.class))).thenReturn(response);
 
-        RespostaCobrancaDTO resultado = cobrancaService.cadastrar(originador.getCpf(), dto);
+        RespostaCobrancaDTO resultado = cobrancaService.salvar(originador.getCpf(), dto);
 
         // Usando comparação recursiva ignorando dataCriacao
         assertThat(resultado)
@@ -114,7 +137,7 @@ class CobrancaServiceTest {
         when(usuarioService.buscarPorCpf(dtoMesmoCpf.cpfDestinatario())).thenReturn(originador);
 
         assertThrows(CpfOriginadorDestinatarioIguaisException.class,
-                () -> cobrancaService.cadastrar("11111111111", dtoMesmoCpf));
+                () -> cobrancaService.salvar("11111111111", dtoMesmoCpf));
 
         verifyNoInteractions(cobrancaRepository);
     }
@@ -153,7 +176,7 @@ class CobrancaServiceTest {
 
     @Test
     void deveCadastrarCobrancaDiretamente() {
-        cobrancaService.cadastrar(cobranca);
+        cobrancaService.salvar(cobranca);
 
         verify(cobrancaRepository).save(cobranca);
     }
@@ -176,6 +199,133 @@ class CobrancaServiceTest {
                 () -> cobrancaService.buscarCobrancaPorId(2L));
 
         verify(cobrancaRepository).findById(2L);
+    }
+
+    @Test
+    void deveCancelarCobrancaComSucesso() {
+        cobranca.setStatus(StatusCobranca.PENDENTE);
+        when(cobrancaRepository.findById(1L)).thenReturn(Optional.of(cobranca));
+
+        // Mapeamento do DTO refletindo alterações reais da cobrança
+        when(cobrancaMapper.toDTO(any(Cobranca.class)))
+                .thenAnswer(invocation -> {
+                    Cobranca c = invocation.getArgument(0);
+                    return new RespostaCobrancaDTO(
+                            c.getId(),
+                            c.getOriginador().getCpf(),
+                            c.getDestinatario().getCpf(),
+                            c.getValor(),
+                            c.getDescricao(),
+                            c.getStatus(),
+                            c.getDataCriacao()
+                    );
+                });
+
+        RespostaCobrancaDTO resultado = cobrancaService.cancelarCobranca(1L, originador.getCpf());
+
+        assertThat(resultado.status()).isEqualTo(StatusCobranca.CANCELADA);
+        verify(cobrancaRepository).save(cobranca);
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoOriginadorInvalido() {
+        when(cobrancaRepository.findById(1L)).thenReturn(Optional.of(cobranca));
+
+        assertThrows(OriginadorInvalidoException.class,
+                () -> cobrancaService.cancelarCobranca(1L, "99999999999"));
+
+        verify(cobrancaRepository, never()).save(any());
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoCobrancaJaCancelada() {
+        cobranca.setStatus(StatusCobranca.CANCELADA);
+        when(cobrancaRepository.findById(1L)).thenReturn(Optional.of(cobranca));
+
+        assertThrows(CobrancaJaPagaException.class,
+                () -> cobrancaService.cancelarCobranca(1L, originador.getCpf()));
+
+        verify(cobrancaRepository, never()).save(any());
+    }
+
+    @Test
+    void deveEstornarSaldoQuandoCobrancaPaga() {
+        Cobranca cobranca = new Cobranca();
+        cobranca.setStatus(StatusCobranca.PAGA);
+        cobranca.setOriginador(originador);
+        cobranca.setDestinatario(destinatario);
+
+        Pagamento pagamento = new Pagamento();
+        pagamento.setTipoPagamento(TipoPagamento.SALDO);
+        pagamento.setValor(new BigDecimal("100"));
+        pagamento.setCobranca(cobranca);
+
+        // mock do pagamentoService
+        when(pagamentoService.findByCobranca(cobranca)).thenReturn(pagamento);
+        when(cobrancaRepository.findById(cobranca.getId())).thenReturn(Optional.of(cobranca));
+
+        cobrancaService.cancelarCobranca(cobranca.getId(), cobranca.getOriginador().getCpf());
+
+        assertEquals(StatusCobranca.CANCELADA, cobranca.getStatus());
+    }
+
+    @Test
+    void deveCancelarPagamentoCartaoQuandoAutorizado() {
+        // Define a cobrança como PAGA
+        cobranca.setStatus(StatusCobranca.PAGA);
+
+        // Inicializa o pagamento como CARTAO
+        pagamento = Pagamento.builder()
+                .id(1L)
+                .cobranca(cobranca)
+                .valor(cobranca.getValor())
+                .status(StatusPagamento.CONCLUIDO)
+                .tipoPagamento(TipoPagamento.CARTAO)
+                .build();
+
+        // Mock do repository e services
+        when(cobrancaRepository.findById(1L)).thenReturn(Optional.of(cobranca));
+        when(pagamentoService.findByCobranca(cobranca)).thenReturn(pagamento);
+        when(autorizacaoService.autorizarDeposito(pagamento.getValor())).thenReturn(true);
+
+        // Mapeamento real para refletir alterações de status
+        when(cobrancaMapper.toDTO(any(Cobranca.class)))
+                .thenAnswer(invocation -> {
+                    Cobranca c = invocation.getArgument(0);
+                    return new RespostaCobrancaDTO(
+                            c.getId(),
+                            c.getOriginador().getCpf(),
+                            c.getDestinatario().getCpf(),
+                            c.getValor(),
+                            c.getDescricao(),
+                            c.getStatus(),
+                            c.getDataCriacao()
+                    );
+                });
+
+        // Executa o cancelamento
+        RespostaCobrancaDTO resultado = cobrancaService.cancelarCobranca(1L, originador.getCpf());
+
+        // Verificações
+        assertThat(resultado.status()).isEqualTo(StatusCobranca.CANCELADA);
+        assertThat(pagamento.getStatus()).isEqualTo(StatusPagamento.CANCELADO);
+        verify(pagamentoService).salvar(pagamento);
+        verify(cobrancaRepository).save(cobranca);
+    }
+
+    @Test
+    void deveLancarExcecaoQuandoAutorizacaoDepositoNegada() {
+        cobranca.setStatus(StatusCobranca.PAGA);
+        pagamento.setTipoPagamento(TipoPagamento.CARTAO);
+        when(cobrancaRepository.findById(1L)).thenReturn(Optional.of(cobranca));
+        when(pagamentoService.findByCobranca(cobranca)).thenReturn(pagamento);
+        when(autorizacaoService.autorizarDeposito(pagamento.getValor())).thenReturn(false);
+
+        assertThrows(PagamentoDeCobrancaNaoAutorizadaException.class,
+                () -> cobrancaService.cancelarCobranca(1L, originador.getCpf()));
+
+        verify(pagamentoService, never()).salvar(any());
+        verify(cobrancaRepository, never()).save(any());
     }
 
 }

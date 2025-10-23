@@ -1,7 +1,10 @@
 package com.nimble.gatewaypagamento.exception.cobranca;
 
-public class CobrancaNaoEncontradaException extends RuntimeException {
+import com.nimble.gatewaypagamento.exception.GatewayPagamentoException;
+import org.springframework.http.HttpStatus;
+
+public class CobrancaNaoEncontradaException extends GatewayPagamentoException {
     public CobrancaNaoEncontradaException(String mensagem) {
-        super(mensagem);
+        super(mensagem, HttpStatus.NOT_FOUND);
     }
 }
